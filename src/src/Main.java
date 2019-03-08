@@ -164,7 +164,7 @@ public class Main {
             @Override
             public void keyReleased(GlobalKeyEvent event) {
 
-                if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_V && event.isControlPressed()) {
+                if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_X && event.isControlPressed()) {
                     robotWorking = false;
                     System.out.println("action cancelled");
                 }
@@ -204,7 +204,7 @@ public class Main {
                 }
 
                 if (event.getVirtualKeyCode()
-                        == GlobalKeyEvent.VK_V && event.isControlPressed() && event.isShiftPressed()) {
+                        == GlobalKeyEvent.VK_X && event.isControlPressed() && event.isShiftPressed()) {
 
                     System.out.print("saving..");
                     rt.lazy.forceSave();
