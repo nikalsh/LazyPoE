@@ -6,7 +6,7 @@
 ### 
 in /dist/ run:
 ```shell
-java -jar lazypoe.jar
+java -jar lazypoeboy.jar
 ```
 
 
