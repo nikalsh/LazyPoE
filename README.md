@@ -1,10 +1,10 @@
-## Lazy PoE
+## -
 ----
 - Automated inventory management
 ## Usage
 ---
 ### 
-in /dist/ run:
+run:
 ```shell
 java -jar lazypoeboy.jar
 ```
