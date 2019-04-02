@@ -1,6 +1,8 @@
-## -
+## - LazyPoeBoy
+- Prevent wrist fatigure & RSI
+- Highly ergonomic hotkeys
+- More features coming soon!
 ----
-- Automated inventory management
 ## Usage
 ---
 ### 
