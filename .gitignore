@@ -5,3 +5,4 @@ items.ser
 manifest.mf
 build/
 *.idea
+*target
