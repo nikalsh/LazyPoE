@@ -1,4 +1,4 @@
-package src;
+package lazypoe;
 
 import java.io.Serializable;
 
