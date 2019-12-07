@@ -11,3 +11,4 @@ build/
 notes.md
 *.ser
 dist
+docs
