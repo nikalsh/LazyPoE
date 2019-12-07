@@ -18,9 +18,10 @@ import java.util.logging.Logger;
  *
  * @author nikalsh
  */
+
+//older version of lazyPoE, not used anymore
 public class lazyPoe {
 
-//
     File serFile = null;
     Scanner scan;
     byte[] currItem = new byte[]{0};
@@ -64,8 +65,7 @@ public class lazyPoe {
     }
 
     public void forceSave() {
-//        for (ItemData data : inMemoryItemList) {
-//        }
+
 
         try (FileOutputStream fos = new FileOutputStream(serFile);
                 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
@@ -78,7 +78,6 @@ public class lazyPoe {
                 }
 
             }
-            oos.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -6,6 +6,8 @@ import java.io.Serializable;
  *
  * @author nikalsh
  */
+
+//old version
 public class ItemData implements Serializable {
 
     private byte[] itemBytes;

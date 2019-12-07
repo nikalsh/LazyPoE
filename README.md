@@ -1,24 +1,26 @@
-## - LazyPoeBoy
-- Prevent wrist fatigure & RSI
-- Highly ergonomic hotkeys
-- More features coming soon!
-----
+# LazyPoE
+
+
+## Prerequisites
+- Java 8
+- Maven
+
+## Installation
+
+```
+mvn clean install
+```
+
 ## Usage
----
-### 
-run:
+
+Run:
 ```shell
-java -jar lazypoeboy.jar
+java -jar lazypoe.jar
 ```
 
 
 #### Hotkeys
-|Hotkey  | Action|
+|Shortcut| Action|
 |------|------|
-|CTRL + D|Dump inventory|
-|CTRL + S|Dump inventory (filtered)|
-|CTRL + X|Cancel current action|
-|CTRL + R|Check if item is filtered|
-|CTRL + SHIFT + F | Add item to filter|
-|CTRL + SHIFT + R | Remove item from filter|
-|CTRL + SHIFT + X | Exit and save filter|
+|CTRL + D|Blind inventory dump|
+| CTRL + X | Cancel current action |

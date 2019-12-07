@@ -1,8 +1,13 @@
 build.xml
 nbproject
 test
-items.ser
 manifest.mf
 build/
 *.idea
 *target
+*.odp
+*.odt
+*.ppt
+notes.md
+*.ser
+dist
