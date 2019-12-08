@@ -1,6 +1,6 @@
 #ROOTNODE {
-    -fx-background-radius: 30;
-    -fx-border-radius: 30;
+    /*-fx-background-radius: 30;*/
+    /*-fx-border-radius: 30;*/
     /*-fx-border-width: 5;*/
     /*-fx-border-color: blue;*/
     -fx-background-color: black;
@@ -27,3 +27,24 @@
 #dark-blue Text {
     /*-fx-effect: dropshadow( one-pass-box , rgba(0,0,0,0.9) , 1, 0.0 , 0 , 1 );*/
 }
+
+.titled-pane {
+    -fx-text-fill: white;
+}
+
+.titled-pane > .title {
+    -fx-background-color: black;
+    -fx-text-fill: white;
+
+}
+
+.accordion .titled-pane *.content {
+    -fx-background-color: black;
+    -fx-border-color: black;
+
+}
+
+.accordion > .titled-pane > .title {
+}
+
+
