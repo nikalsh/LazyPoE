@@ -13,10 +13,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -36,8 +34,9 @@ public class LazyPoE {
     private static final String WORKING = "working..";
 
     private static boolean robotIsWorking = false;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final int DELAY = 17;
+//    private static final int DELAY = 25;
 
     private static final String CURRENCY = "Currency";
     private static final String DIVINATION_CARD = "Divination Card";
@@ -184,11 +183,17 @@ public class LazyPoE {
                 if (CTRL_R(event)) {
 
 
-                    autoTP();
+//                    autoTP();
 
 
 //                    imageTemplateMatcher.findChaosAndExalt(getInventoryScreenshot());
 //                    realTimeInventoryAnalysis();
+//                        identifyStashTab();
+
+
+//                    imageTemplateMatcher.findTab(getStashTabScreenshot());
+
+//                    realTimeTabAnalysis();
 
                     status = IDLE;
                 }
@@ -202,10 +207,18 @@ public class LazyPoE {
 
     }
 
+
+    private BufferedImage getStashTabScreenshot() {
+        robot.setAutoDelay(25);
+        BufferedImage image = robot.createScreenCapture(new Rectangle(10, 161, 637, 710));
+        robot.setAutoDelay(DELAY);
+        return image;
+    }
+
+
     private void autoTP() {
         status = WORKING;
         status = "auto tp..";
-
         openEnterPortal();
     }
 
@@ -213,7 +226,6 @@ public class LazyPoE {
 
         if (isInventoryOpen()) {
             openPortal();
-
         } else {
             toggleInventory();
             openPortal();
@@ -223,6 +235,9 @@ public class LazyPoE {
 
     private boolean isInventoryOpen() {
         BufferedImage img = robot.createScreenCapture(new Rectangle(1264, 0, 646, 110));
+
+        Utils.BItoFile(img, "inventoryz");
+
         return imageTemplateMatcher.isInventoryOpen(img);
     }
 
@@ -260,6 +275,26 @@ public class LazyPoE {
                 }
             }
 
+        });
+        t.start();
+
+    }
+
+    private void realTimeTabAnalysis() {
+        Thread t = new Thread(() -> {
+            robotIsWorking = true;
+
+            while (robotIsWorking) {
+                BufferedImage img = getStashTabScreenshot();
+                System.out.println(imageTemplateMatcher.nameOfOpenTab(img));
+
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
         });
         t.start();
     }
@@ -331,7 +366,7 @@ public class LazyPoE {
 
             robot.mouseMove(x, y);
             String item = identifyItem();
-
+            System.out.println(item);
             if (item != null) {
                 itemInSlot.put(slot, item);
             }
@@ -345,65 +380,7 @@ public class LazyPoE {
         smartDump(itemInSlot);
     }
 
-//    private void analyzeThenDumpInventoryToStash() {
-//        robotIsWorking = true;
-//        robot.mouseMove(1364, 507); //inventory safe spot
-//
-//        while (robotIsWorking) {
-//            robot.setAutoDelay(10);
-//            int x = INVENTORY_LEFTMOST_SLOT_X;
-//            int y = INVENTORY_LEFTMOST_SLOT_Y;
-//
-//            String[][] inventoryGrid = new String[INVENTORY_ROWS][INVENTORY_COLS];
-//            Map<Point, String> itemInSlot = new HashMap<>();
-//
-//            status = "analyzing inventory";
-//            System.out.println("reading inventory..");
-//
-//            OUTER:
-//            for (int row = 0; row < INVENTORY_ROWS; row++) {
-//
-//                if (!robotIsWorking) {
-//                    System.out.println("action cancelled.");
-//                    break OUTER;
-//                }
-//
-//                for (int col = 0; col < INVENTORY_COLS; col++) {
-//
-//                    if (!robotIsWorking) {
-//                        System.out.println("action cancelled.");
-//                        break OUTER;
-//                    }
-//
-//
-//                    robot.mouseMove(x, y);
-//                    String item = identifyItem();
-//
-//                    if (item != null) {
-//
-//                        itemInSlot.put(new Point(x, y), item);
-//                        inventoryGrid[row][col] = item;
-//                    } else {
-//                        inventoryGrid[row][col] = "EMPTY";
-//                    }
-//
-//
-//                    x += INVENTORY_SLOT_SIZE;
-//                }
-//                x = INVENTORY_LEFTMOST_SLOT_X;
-//                y += INVENTORY_SLOT_SIZE;
-//            }
-//            System.out.println("done.");
-//            status = "done";
-//            robotIsWorking = false;
-//            printGrid(inventoryGrid);
-//            robot.setAutoDelay(DELAY);
-//
-//            smartDump(itemInSlot);
-//
-//        }
-//
-//    }
+
 
     private void smartDump(Map<Point, String> itemInSlot) {
 
@@ -414,19 +391,36 @@ public class LazyPoE {
         Map<Point, String> fragments = splitInventoryByType(FRAGMENT, itemInSlot);
         Map<Point, String> fossils = splitInventoryByType(FOSSIL, itemInSlot);
 
-        List<Map<Point, String>> inventories = new ArrayList<>();
-        inventories.add(currencies);
-        inventories.add(div_cards);
-        inventories.add(maps);
-        inventories.add(essences);
-        inventories.add(fragments);
-        inventories.add(fossils);
 
-        for (Map<Point, String> inventory : inventories) {
+        Map<String, Map<Point, String>> inventories = new HashMap<>();
+        inventories.put(CURRENCY, currencies);
+        inventories.put(DIVINATION_CARD, div_cards);
+        inventories.put(MAP, maps);
+        inventories.put(ESSENCE, essences);
+        inventories.put(FRAGMENT, fragments);
+        inventories.put(FOSSIL, fossils);
+
+
+        openFirstTab();
+
+        for (int i = 0; i < 6; i++) {
+
+            String openTab = imageTemplateMatcher.nameOfOpenTab(getStashTabScreenshot());
+
+            Map<Point, String> inventory = inventories.get(openTab);
+
             if (inventory.size() > 0) {
                 dump(inventory);
             }
+
+            nextTab();
         }
+
+    }
+
+    private void nextTab() {
+        robot.keyPress(KeyEvent.VK_RIGHT);
+        robot.keyRelease(KeyEvent.VK_RIGHT);
     }
 
     private Map<Point, String> splitInventoryByType(String type, Map<Point, String> itemInSlot) {
@@ -436,16 +430,28 @@ public class LazyPoE {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    private void openFirstTab() {
+        int x = 639;
+        int y = 141;
+
+        mouseClickXY(x, y);
+        robot.keyPress(KeyEvent.VK_UP);
+        robot.keyRelease(KeyEvent.VK_UP);
+
+        robot.keyPress(KeyEvent.VK_ENTER);
+        robot.keyRelease(KeyEvent.VK_ENTER);
+
+        mouseClickXY(x, y);
+
+    }
+
     private void dump(Map<Point, String> itemInSlot) {
         robotIsWorking = true;
         String tab = itemInSlot.entrySet().iterator().next().getValue();
         System.out.format("dumping to %s%n", tab);
         StringBuilder sb = new StringBuilder("dumping ").append(tab);
         status = sb.toString();
-        int tabX = STASH_TAB_X_FOR_RARITY.get(tab);
-        int tabY = STASH_TABS_Y;
 
-        mouseClickXY(tabX, tabY);
 
         for (Map.Entry entry : itemInSlot.entrySet()) {
 

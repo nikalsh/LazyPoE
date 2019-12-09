@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ImageTemplateMatcher {
@@ -19,8 +20,27 @@ public class ImageTemplateMatcher {
     private String exaltedOrbPath = "assets/exalted_orb1.jpg";
     private String alchemyOrbPath = "assets/alchemy_orb.jpg";
 
+    private String currencyTabPath = "assets/currency_tab.jpg";
+    private String divTabPath = "assets/div_tab.jpg";
+    private String essenceTabPath = "assets/essence_tab.jpg";
+    private String mapTabPath = "assets/map_tab.jpg";
+    private String fragmentTabPath = "assets/fragment_tab.jpg";
+    private String delveTabPath = "assets/delve_tab.jpg";
+
     private String inventoryPath = "assets/inventory.jpg";
     private Template inventoryTemplate = new Template("Inventory", "green", inventoryPath, 0.9);
+
+
+    private Template currencyTabTemplate = new Template("Currency", "green", currencyTabPath, 0.85);
+    private Template divTabTemplate = new Template("Divination Card", "green", divTabPath, 0.85);
+    private Template essenceTabTemplate = new Template("Essence", "green", essenceTabPath, 0.85);
+    private Template mapTabTemplate = new Template("Map", "green", mapTabPath, 0.85);
+    private Template fragmentTabTemplate = new Template("Fragment", "green", fragmentTabPath, 0.85);
+    private Template delveTabTemplate = new Template("Fossil", "green", delveTabPath, 0.85);
+
+    private List<Template> tabTemplates = new ArrayList<>();
+
+
     private Template chaosOrbTemplate = new Template("Chaos", "green", chaosOrbPath, 0.825);
     private Template exaltedOrbTemplate = new Template("Exalt", "red", exaltedOrbPath, 0.85);
     private Template alchemyOrbTemplate = new Template("Alch", "blue", alchemyOrbPath, 0.9);
@@ -30,6 +50,7 @@ public class ImageTemplateMatcher {
             exaltedOrbTemplate
 //            alchemyOrbTemplate
     );
+
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
@@ -42,6 +63,12 @@ public class ImageTemplateMatcher {
 
     private void loadTemplates() {
 
+        tabTemplates.add(currencyTabTemplate);
+        tabTemplates.add(divTabTemplate);
+        tabTemplates.add(essenceTabTemplate);
+        tabTemplates.add(mapTabTemplate);
+        tabTemplates.add(fragmentTabTemplate);
+        tabTemplates.add(delveTabTemplate);
 
     }
 
@@ -114,6 +141,60 @@ public class ImageTemplateMatcher {
         return matchTemplateWithBI(inventoryTemplate, bufferedImageToMat(img), inventoryTemplate.getThreshold()).getCount() > 0;
     }
 
+    public String nameOfOpenTab(BufferedImage img) {
+        Mat s1 = null;
+        TemplateMatchingResult res = null;
+        for (int i = 0; i < tabTemplates.size(); i++) {
+
+            if (i == 0) {
+                res = matchTemplateWithBI(tabTemplates.get(0), bufferedImageToMat(img), tabTemplates.get(0).getThreshold());
+
+                if (res.getCount() > 0) {
+                    return tabTemplates.get(i).getName();
+                }
+
+                s1 = res.getMat();
+
+            } else {
+                res = matchTemplateWithBI(tabTemplates.get(i), s1, tabTemplates.get(i).getThreshold());
+
+                if (res.getCount() > 0) {
+                    return tabTemplates.get(i).getName();
+                }
+
+                s1 = res.getMat();
+
+            }
+
+
+        }
+//
+//        HighGui.namedWindow("tabs", HighGui.WINDOW_AUTOSIZE);
+//        HighGui.imshow("tabs", s1);
+//        HighGui.moveWindow("tabs", 400, 400);
+//        HighGui.waitKey(1);
+
+        return "Misc";
+    }
+
+
+    public boolean findTab(BufferedImage img) {
+
+        Mat s1 = matchTemplateWithBI(currencyTabTemplate, bufferedImageToMat(img), currencyTabTemplate.getThreshold()).getMat();
+        Mat s2 = matchTemplateWithBI(divTabTemplate, s1, divTabTemplate.getThreshold()).getMat();
+        Mat s3 = matchTemplateWithBI(delveTabTemplate, s2, delveTabTemplate.getThreshold()).getMat();
+        Mat s4 = matchTemplateWithBI(essenceTabTemplate, s3, essenceTabTemplate.getThreshold()).getMat();
+        Mat s5 = matchTemplateWithBI(fragmentTabTemplate, s4, fragmentTabTemplate.getThreshold()).getMat();
+        Mat s6 = matchTemplateWithBI(mapTabTemplate, s5, mapTabTemplate.getThreshold()).getMat();
+
+        HighGui.namedWindow("tabs", HighGui.WINDOW_AUTOSIZE);
+        HighGui.imshow("tabs", s6);
+        HighGui.moveWindow("tabs", 400, 400);
+        HighGui.waitKey(1);
+
+        return true;
+    }
+
 
     public TemplateMatchingResult matchTemplateWithBI(Template template, Mat screenshot, double threshold) {
 
@@ -131,7 +212,7 @@ public class ImageTemplateMatcher {
         Imgproc.cvtColor(templateMat, grayTemplate, Imgproc.COLOR_RGB2GRAY);
 
 
-        Imgcodecs.imwrite("inventory.png", sourceGray);
+//        Imgcodecs.imwrite("inventory.png", sourceGray);
 
         Mat thresh = new Mat();
 
@@ -174,8 +255,8 @@ public class ImageTemplateMatcher {
 //        grayTemplate = threshTemplate;
         Imgproc.matchTemplate(sourceGray, grayTemplate, output, matchMethod);
 //        Imgproc.matchTemplate()
-        Imgcodecs.imwrite("gray.png", grayTemplate);
-        Imgcodecs.imwrite("output.png", output);
+//        Imgcodecs.imwrite("gray.png", grayTemplate);
+//        Imgcodecs.imwrite("output.png", output);
 
 
         Core.MinMaxLocResult mmr = null;
@@ -211,14 +292,12 @@ public class ImageTemplateMatcher {
                 orbCount++;
             } else {
 
-                long time = System.currentTimeMillis() - t0;
-//                System.out.println("completed in " + time + " ms");
                 break;
             }
         }
 
-        System.out.println("found " + orbCount + " " + template.getName());
-        Imgcodecs.imwrite("./matched" + template.getName() + ".png", sourceRGB);
+//        System.out.println("found " + orbCount + " " + template.getName());
+//        Imgcodecs.imwrite("./matched" + template.getName() + ".png", sourceRGB);
 
 
         try {
