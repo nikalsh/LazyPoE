@@ -24,7 +24,6 @@ public class ImageTemplateMatcher {
     private String inventoryPath = "assets/inventory.jpg";
     private Template inventoryTemplate = new Template("Inventory", "green", inventoryPath, 0.9);
 
-
     private Template currencyTabTemplate = new Template("Currency", "green", currencyTabPath, 0.85);
     private Template divTabTemplate = new Template("Divination Card", "green", divTabPath, 0.85);
     private Template essenceTabTemplate = new Template("Essence", "green", essenceTabPath, 0.85);
@@ -33,7 +32,6 @@ public class ImageTemplateMatcher {
     private Template delveTabTemplate = new Template("Fossil", "green", delveTabPath, 0.85);
 
     private List<Template> tabTemplates = new ArrayList<>();
-
 
     private Template chaosOrbTemplate = new Template("Chaos", "green", chaosOrbPath, 0.825);
     private Template exaltedOrbTemplate = new Template("Exalt", "red", exaltedOrbPath, 0.85);
