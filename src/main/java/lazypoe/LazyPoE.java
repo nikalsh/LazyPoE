@@ -57,13 +57,6 @@ public class LazyPoE {
     private static final int STASH_TABS_Y = 144;
     private static final int STASH_TAB_SIZE = 60;
 
-    private Integer TAB1 = STASH_TAB_SIZE * 1;
-    private Integer TAB2 = STASH_TAB_SIZE * 2;
-    private Integer TAB3 = STASH_TAB_SIZE * 3;
-    private Integer TAB4 = STASH_TAB_SIZE * 4;
-    private Integer TAB5 = STASH_TAB_SIZE * 5;
-    private Integer TAB6 = STASH_TAB_SIZE * 6;
-
     private Map<String, Integer> STASH_TAB_X_FOR_RARITY = new HashMap<>();
 
     private List<GUI.ButtonSlot> protectedSlots = null;
@@ -76,21 +69,10 @@ public class LazyPoE {
     private GlobalKeyboardHook globalKeyboardHook;
     private ImageTemplateMatcher imageTemplateMatcher;
 
-
-    private void initTabMapping() {
-        STASH_TAB_X_FOR_RARITY.put(CURRENCY, TAB1);
-        STASH_TAB_X_FOR_RARITY.put(DIVINATION_CARD, TAB2);
-        STASH_TAB_X_FOR_RARITY.put(MAP, TAB3);
-        STASH_TAB_X_FOR_RARITY.put(ESSENCE, TAB4);
-        STASH_TAB_X_FOR_RARITY.put(FRAGMENT, TAB5);
-        STASH_TAB_X_FOR_RARITY.put(FOSSIL, TAB6);
-    }
-
     public LazyPoE() throws AWTException, UnsupportedFlavorException, IOException {
         robot = new Robot();
         imageTemplateMatcher = new ImageTemplateMatcher();
         robot.setAutoDelay(DELAY);
-        initTabMapping();
         initInventory();
         initGlobalKeyboardHook();
         status = IDLE;
@@ -182,9 +164,7 @@ public class LazyPoE {
                     }
                     return bs.isProtect();
                 }
-
             }
-
         }
         return false;
     }
@@ -217,31 +197,27 @@ public class LazyPoE {
             toggleInventory();
             openPortal();
         }
-
-    }
-
-    private boolean isInventoryOpen() {
-        BufferedImage img = robot.createScreenCapture(new Rectangle(1264, 0, 646, 110));
-
-        Utils.BItoFile(img, "inventoryz");
-
-        return imageTemplateMatcher.isInventoryOpen(img);
     }
 
     private void openPortal() {
         robot.setAutoDelay(50);
 
         if (DEBUG) {
-        System.out.println(TPSlot);
+            System.out.println(TPSlot);
         }
 
         mouseRightClickXY((int) TPSlot.getX(), (int) TPSlot.getY());
-
         toggleInventory();
-
         mouseClickXY((int) PORTAL_LOC.getX(), (int) PORTAL_LOC.getY());
         robot.setAutoDelay(DELAY);
     }
+
+    private boolean isInventoryOpen() {
+        BufferedImage img = robot.createScreenCapture(new Rectangle(1264, 0, 646, 110));
+        Utils.BItoFile(img, "inventoryz");
+        return imageTemplateMatcher.isInventoryOpen(img);
+    }
+
 
     private void toggleInventory() {
         robot.keyPress(KeyEvent.VK_B);
@@ -660,6 +636,5 @@ public class LazyPoE {
     private boolean RIGHT(GlobalKeyEvent event) {
         return event.getVirtualKeyCode() == GlobalKeyEvent.VK_RIGHT;
     }
-
 
 }
