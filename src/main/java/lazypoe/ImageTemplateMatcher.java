@@ -39,16 +39,12 @@ public class ImageTemplateMatcher {
     private Template exaltedOrbTemplate = new Template("Exalt", "red", exaltedOrbPath, 0.85);
     private Template alchemyOrbTemplate = new Template("Alch", "blue", alchemyOrbPath, 0.9);
 
-
-
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
-
     public ImageTemplateMatcher() {
         loadTemplates();
-
     }
 
     private void loadTemplates() {
@@ -114,7 +110,6 @@ public class ImageTemplateMatcher {
         Core.MinMaxLocResult mmr = null;
         Point matchLoc = null;
 
-
         int orbCount = 0;
         long t0 = System.currentTimeMillis();
 
@@ -122,7 +117,6 @@ public class ImageTemplateMatcher {
 
             mmr = Core.minMaxLoc(output);
             matchLoc = mmr.maxLoc;
-
 
             if (mmr.maxVal > threshold) {
 
@@ -176,7 +170,6 @@ uncomment below for debugging
         return matchTemplateWithBI(template, Utils.bufferedImageToMat(screenshot), threshhold).getCount();
     }
 
-
     public boolean findTab(BufferedImage img) {
 
         Mat s1 = matchTemplateWithBI(currencyTabTemplate, Utils.bufferedImageToMat(img), currencyTabTemplate.getThreshold()).getMat();
@@ -194,7 +187,6 @@ uncomment below for debugging
         return true;
     }
 
-
     public void findOrbs(BufferedImage screenshot) {
 
         BImatchAll(screenshot);
@@ -205,8 +197,6 @@ uncomment below for debugging
     }
 
     public void matchAllOrbTemplates(Mat mat) {
-
-
         Mat s1 = matchTemplateWithBI(chaosOrbTemplate, mat, chaosOrbTemplate.getThreshold()).getMat();
         Mat s2 = matchTemplateWithBI(exaltedOrbTemplate, s1, exaltedOrbTemplate.getThreshold()).getMat();
         Mat s3 = matchTemplateWithBI(alchemyOrbTemplate, s2, alchemyOrbTemplate.getThreshold()).getMat();
@@ -215,8 +205,6 @@ uncomment below for debugging
         HighGui.imshow("orbs", s3);
         HighGui.moveWindow("orbs", 400, 400);
         HighGui.waitKey(1);
-
-
     }
 
 
