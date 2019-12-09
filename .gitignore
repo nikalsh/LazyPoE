@@ -16,5 +16,4 @@ docs
 *.jpg
 !assets/*.png
 !assets/*.jpg
-!out/artifacts/*
-!out/artifacts/*
+!out/artifacts/lazypoe_jar/assets/*
