@@ -3,15 +3,11 @@
 
 ## Prerequisites
 - Java 8
-- Maven
-
-## Installation
-
-```
-mvn clean install
-```
+- OpenCV
 
 ## Usage
+
+Go to out/artifacts/lazypoe_jar
 
 Run:
 ```shell
