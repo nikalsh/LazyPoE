@@ -26,18 +26,8 @@ import java.util.List;
 
 public class GUI extends Application {
 
-    private Label hotkeyLabel;
-    private Label statusLabel;
-    private Button toggleButton;
-    private Button saveButton;
-    private Button resetButton;
-    private LazyPoE lazyPoE;
-    private boolean started = false;
-    private List<ButtonSlot> inventorySlots;
-    private List<HBox> rows;
-    private Button help;
-
     public class ButtonSlot extends Button {
+
         private Point slot;
         private boolean protect;
 
@@ -67,9 +57,7 @@ public class GUI extends Application {
                 }
 
             });
-            this.setOnAction(event -> {
 
-            });
         }
 
         public void reset() {
@@ -98,6 +86,18 @@ public class GUI extends Application {
         }
     }
 
+    private Label hotkeyLabel;
+    private Label statusLabel;
+    private Button toggleButton;
+    private Button saveButton;
+    private Button resetButton;
+    private LazyPoE lazyPoE;
+    private boolean started = false;
+    private List<ButtonSlot> inventorySlots;
+    private List<HBox> rows;
+    private Button help;
+
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         inventorySlots = new ArrayList<>();
@@ -105,7 +105,6 @@ public class GUI extends Application {
         int cols;
 
         VBox buttonGrid = new VBox();
-
         for (int rows = 0; rows < 5; rows++) {
             HBox hbox = hbox();
             this.rows.add(hbox);
@@ -121,7 +120,6 @@ public class GUI extends Application {
 
 
         lazyPoE = new LazyPoE();
-
         lazyPoE.setProtectedSlots(inventorySlots);
 
         Root initRoot = new Root(primaryStage);
@@ -131,7 +129,6 @@ public class GUI extends Application {
         scene.setFill(Color.TRANSPARENT);
 
         hotkeyLabel = getLabel();
-
         hotkeyLabel.setText("hotkeys " + (lazyPoE.isEnabled() ? "enabled" : "disabled"));
 
         statusLabel = getLabel();
@@ -143,12 +140,10 @@ public class GUI extends Application {
         help = new Button("?");
         help.setTooltip(new Tooltip(String.format("Left click to toggle%nX = ignored%nO = not ignored%nRight click = Portal slot")));
 
-
         addEventListeners();
 
         HBox hbox = new HBox();
         hbox.setAlignment(Pos.BASELINE_CENTER);
-
         hbox.getChildren().addAll(hotkeyLabel);
 
         VBox bottomVBox = new VBox();
@@ -160,19 +155,8 @@ public class GUI extends Application {
         titledPane.setContent(bottomVBox);
         titledPane.setAnimated(false);
         titledPane.getStyleClass().add("inventory");
+
         Accordion bottomPanel = new Accordion(titledPane);
-
-
-
-        VBox topPanel = new VBox();
-
-        topPanel.setPadding(new Insets(10, 0, 10, 0));
-        topPanel.setSpacing(8.0);
-
-        topPanel.getChildren().add(hbox);
-        topPanel.getChildren().addAll(hbox(statusLabel), hbox(toggleButton));
-
-
         bottomPanel.expandedPaneProperty().addListener((obs, oldVal, newVal) -> {
             System.out.println("hello");
             Platform.runLater(() -> {
@@ -180,6 +164,11 @@ public class GUI extends Application {
             });
         });
 
+        VBox topPanel = new VBox();
+        topPanel.setPadding(new Insets(10, 0, 10, 0));
+        topPanel.setSpacing(8.0);
+        topPanel.getChildren().add(hbox);
+        topPanel.getChildren().addAll(hbox(statusLabel), hbox(toggleButton));
 
         VBox ROOT = new VBox(topPanel, bottomPanel);
         pane.getChildren().add(ROOT);
@@ -214,28 +203,10 @@ public class GUI extends Application {
     }
 
     private void pollStatus() {
-//        Thread t = new Thread(() -> {
-//            while (started) {
-//                statusLabel.setText(lazyPoE.getStatus());
-//                System.out.println(lazyPoE.getStatus());
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//        });
-//
-//        t.start();
-
         Thread t = new Thread(() -> {
-
             while (started) {
 
-                Platform.runLater(() -> {
-                    statusLabel.setText(new StringBuilder("status: ").append(lazyPoE.getStatus()).toString());
-                });
+                Platform.runLater(() -> statusLabel.setText(new StringBuilder("status: ").append(lazyPoE.getStatus()).toString()));
                 try {
                     Thread.sleep(250);
                 } catch (InterruptedException e) {
@@ -243,8 +214,6 @@ public class GUI extends Application {
                 }
 
             }
-
-
         });
         t.start();
     }
@@ -275,7 +244,4 @@ public class GUI extends Application {
         return hbox;
     }
 
-//    public static void main(String[] args) {
-//        launch(GUI.class);
-//    }
 }

@@ -13,8 +13,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,6 @@ public class LazyPoE {
     private static boolean robotIsWorking = false;
     private static final boolean DEBUG = false;
     private static final int DELAY = 17;
-//    private static final int DELAY = 25;
 
     private static final String CURRENCY = "Currency";
     private static final String DIVINATION_CARD = "Divination Card";
@@ -93,6 +94,45 @@ public class LazyPoE {
         initInventory();
         initGlobalKeyboardHook();
         status = IDLE;
+    }
+
+    private void initGlobalKeyboardHook() {
+        globalKeyboardHook = new GlobalKeyboardHook(true);
+        addEventListeners();
+    }
+
+    private void addEventListeners() {
+
+        globalKeyboardHook.addKeyListener(new GlobalKeyAdapter() {
+
+            @Override
+            public void keyReleased(GlobalKeyEvent event) {
+
+                if (CTRL_X(event)) {
+                    robotIsWorking = false;
+                    status = IDLE;
+                    System.out.println("action cancelled");
+                }
+
+                if (CTRL_D(event)) {
+                    status = WORKING;
+                    analyzeThenDumpInventoryToStash();
+                    status = IDLE;
+                }
+
+                if (CTRL_R(event)) {
+                    status = WORKING;
+                    autoTP();
+                    status = IDLE;
+                }
+
+                if (DEBUG) {
+                    moveMouseCursorWithArrowKeys(event);
+                }
+
+            }
+        });
+
     }
 
     public void setProtectedSlots(List<GUI.ButtonSlot> l) {
@@ -155,61 +195,9 @@ public class LazyPoE {
         this.TPSlot = new Point((x * INVENTORY_SLOT_SIZE) + INVENTORY_LEFTMOST_SLOT_X, (y * INVENTORY_SLOT_SIZE) + INVENTORY_LEFTMOST_SLOT_Y);
     }
 
-    private void initGlobalKeyboardHook() {
-        globalKeyboardHook = new GlobalKeyboardHook(true);
-        addEventListeners();
-    }
-
-    private void addEventListeners() {
-
-        globalKeyboardHook.addKeyListener(new GlobalKeyAdapter() {
-
-            @Override
-            public void keyReleased(GlobalKeyEvent event) {
-
-                if (CTRL_X(event)) {
-                    robotIsWorking = false;
-                    status = IDLE;
-                    System.out.println("action cancelled");
-                }
-
-                if (CTRL_D(event)) {
-//                    blindDump();
-                    status = WORKING;
-                    analyzeThenDumpInventoryToStash();
-                    status = IDLE;
-                }
-
-                if (CTRL_R(event)) {
-
-
-//                    autoTP();
-
-
-//                    imageTemplateMatcher.findChaosAndExalt(getInventoryScreenshot());
-//                    realTimeInventoryAnalysis();
-//                        identifyStashTab();
-
-
-//                    imageTemplateMatcher.findTab(getStashTabScreenshot());
-
-//                    realTimeTabAnalysis();
-
-                    status = IDLE;
-                }
-
-                if (DEBUG) {
-                    moveMouseCursorWithArrowKeys(event);
-                }
-
-            }
-        });
-
-    }
-
 
     private BufferedImage getStashTabScreenshot() {
-        robot.setAutoDelay(25);
+        robot.setAutoDelay(35);
         BufferedImage image = robot.createScreenCapture(new Rectangle(10, 161, 637, 710));
         robot.setAutoDelay(DELAY);
         return image;
@@ -217,7 +205,6 @@ public class LazyPoE {
 
 
     private void autoTP() {
-        status = WORKING;
         status = "auto tp..";
         openEnterPortal();
     }
@@ -243,7 +230,10 @@ public class LazyPoE {
 
     private void openPortal() {
         robot.setAutoDelay(50);
+
+        if (DEBUG) {
         System.out.println(TPSlot);
+        }
 
         mouseRightClickXY((int) TPSlot.getX(), (int) TPSlot.getY());
 
@@ -267,7 +257,7 @@ public class LazyPoE {
             robotIsWorking = true;
             while (robotIsWorking) {
                 BufferedImage img = robot.createScreenCapture(new Rectangle(1264, 582, 646, 275));
-                imageTemplateMatcher.findChaosAndExalt(img);
+                imageTemplateMatcher.findOrbs(img);
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
@@ -286,7 +276,7 @@ public class LazyPoE {
 
             while (robotIsWorking) {
                 BufferedImage img = getStashTabScreenshot();
-                System.out.println(imageTemplateMatcher.nameOfOpenTab(img));
+                System.out.println(imageTemplateMatcher.getNameOfOpenTab(img));
 
                 try {
                     Thread.sleep(50);
@@ -353,7 +343,7 @@ public class LazyPoE {
 
         robotIsWorking = true;
         robot.mouseMove(1364, 507); //inventory safe spot
-        robot.setAutoDelay(12);
+        robot.setAutoDelay(13);
 
         Map<Point, String> itemInSlot = new HashMap<>();
 
@@ -365,22 +355,25 @@ public class LazyPoE {
             y = (int) slot.getY();
 
             robot.mouseMove(x, y);
+
             String item = identifyItem();
+            if (DEBUG) {
             System.out.println(item);
+            }
             if (item != null) {
                 itemInSlot.put(slot, item);
             }
         }
 
+        if (DEBUG) {
         System.out.println("done.");
+        }
         status = "done";
         robotIsWorking = false;
         robot.setAutoDelay(DELAY);
 
         smartDump(itemInSlot);
     }
-
-
 
     private void smartDump(Map<Point, String> itemInSlot) {
 
@@ -391,7 +384,6 @@ public class LazyPoE {
         Map<Point, String> fragments = splitInventoryByType(FRAGMENT, itemInSlot);
         Map<Point, String> fossils = splitInventoryByType(FOSSIL, itemInSlot);
 
-
         Map<String, Map<Point, String>> inventories = new HashMap<>();
         inventories.put(CURRENCY, currencies);
         inventories.put(DIVINATION_CARD, div_cards);
@@ -400,25 +392,23 @@ public class LazyPoE {
         inventories.put(FRAGMENT, fragments);
         inventories.put(FOSSIL, fossils);
 
-
         openFirstTab();
 
         for (int i = 0; i < 6; i++) {
 
-            String openTab = imageTemplateMatcher.nameOfOpenTab(getStashTabScreenshot());
+            String openTab = imageTemplateMatcher.getNameOfOpenTab(getStashTabScreenshot());
 
             Map<Point, String> inventory = inventories.get(openTab);
 
             if (inventory.size() > 0) {
                 dump(inventory);
             }
-
-            nextTab();
+            openNextTab();
         }
 
     }
 
-    private void nextTab() {
+    private void openNextTab() {
         robot.keyPress(KeyEvent.VK_RIGHT);
         robot.keyRelease(KeyEvent.VK_RIGHT);
     }
@@ -435,12 +425,8 @@ public class LazyPoE {
         int y = 141;
 
         mouseClickXY(x, y);
-        robot.keyPress(KeyEvent.VK_UP);
-        robot.keyRelease(KeyEvent.VK_UP);
-
-        robot.keyPress(KeyEvent.VK_ENTER);
-        robot.keyRelease(KeyEvent.VK_ENTER);
-
+        upPress();
+        enterPress();
         mouseClickXY(x, y);
 
     }
@@ -448,10 +434,13 @@ public class LazyPoE {
     private void dump(Map<Point, String> itemInSlot) {
         robotIsWorking = true;
         String tab = itemInSlot.entrySet().iterator().next().getValue();
-        System.out.format("dumping to %s%n", tab);
+
         StringBuilder sb = new StringBuilder("dumping ").append(tab);
         status = sb.toString();
 
+        if (DEBUG) {
+        System.out.format("dumping to %s%n", tab);
+        }
 
         for (Map.Entry entry : itemInSlot.entrySet()) {
 
@@ -460,26 +449,12 @@ public class LazyPoE {
             int itemY = (int) p.getY();
 
             mouseCtrlClickXY(itemX, itemY);
-
         }
 
         robotIsWorking = false;
     }
 
-    private void mouseCtrlClickXY(int x, int y) {
-        robot.mouseMove(x, y);
-        ctrl_click();
-    }
 
-    private void mouseClickXY(int x, int y) {
-        robot.mouseMove(x, y);
-        left_click();
-    }
-
-    private void mouseRightClickXY(int x, int y) {
-        robot.mouseMove(x, y);
-        right_click();
-    }
 
     private void printGrid(String[][] inventoryGrid) {
         for (String[] arr : inventoryGrid) {
@@ -506,15 +481,18 @@ public class LazyPoE {
     }
 
     private String getItem(String clip) {
-//        System.out.println(clip);
+
+        if (DEBUG) {
+            System.out.println(clip);
+        }
 
         String[] clipParts = newlineSplit(clip);
         String[] dashParts = clip.split("--------");
 
         String rarity = null;
         try {
-            //if item is currency
-            rarity = clipParts[0].split("Rarity: ")[1];
+
+            rarity = clipParts[0].split("Rarity: ")[1]; /* == Currency */
 
             if (clipParts[1].contains(MAP) || rarity.equals("Unique") && dashParts[1].contains(MAP)) {
                 rarity = MAP;
@@ -590,22 +568,59 @@ public class LazyPoE {
         System.out.format("x: %s y: %s%n", p.getX(), p.getY());
     }
 
+    public void disable() {
+        globalKeyboardHook.shutdownHook();
+    }
+
+    public void enable() {
+        initGlobalKeyboardHook();
+    }
+
+    public boolean isEnabled() {
+        return globalKeyboardHook.isAlive();
+    }
+
+    private void mouseCtrlClickXY(int x, int y) {
+        robot.mouseMove(x, y);
+        ctrlClick();
+    }
+
+    private void mouseClickXY(int x, int y) {
+        robot.mouseMove(x, y);
+        leftClick();
+    }
+
+    private void mouseRightClickXY(int x, int y) {
+        robot.mouseMove(x, y);
+        rightClick();
+    }
+
     private void escape() {
         robot.keyPress(KeyEvent.VK_ESCAPE);
         robot.keyRelease(KeyEvent.VK_ESCAPE);
     }
 
-    private void right_click() {
+    private void upPress() {
+        robot.keyPress(KeyEvent.VK_UP);
+        robot.keyRelease(KeyEvent.VK_UP);
+    }
+
+    private void enterPress() {
+        robot.keyPress(KeyEvent.VK_ENTER);
+        robot.keyRelease(KeyEvent.VK_ENTER);
+    }
+
+    private void rightClick() {
         robot.mousePress(InputEvent.BUTTON3_MASK);
         robot.mouseRelease(InputEvent.BUTTON3_MASK);
     }
 
-    private void left_click() {
+    private void leftClick() {
         robot.mousePress(InputEvent.BUTTON1_MASK);
         robot.mouseRelease(InputEvent.BUTTON1_MASK);
     }
 
-    private void ctrl_click() {
+    private void ctrlClick() {
         robot.keyPress(KeyEvent.VK_CONTROL);
         robot.mousePress(InputEvent.BUTTON1_MASK);
         robot.mouseRelease(InputEvent.BUTTON1_MASK);
@@ -629,10 +644,6 @@ public class LazyPoE {
         return event.getVirtualKeyCode()
                 == GlobalKeyEvent.VK_R && event.isControlPressed();
     }
-//
-//    private boolean CTRL_C(GlobalKeyEvent event) {
-//        return event.getVirtualKeyCode() == GlobalKeyEvent.VK_C && event.isControlPressed();
-//    }
 
     private boolean UP(GlobalKeyEvent event) {
         return event.getVirtualKeyCode() == GlobalKeyEvent.VK_UP;
@@ -650,16 +661,5 @@ public class LazyPoE {
         return event.getVirtualKeyCode() == GlobalKeyEvent.VK_RIGHT;
     }
 
-    public void disable() {
-        globalKeyboardHook.shutdownHook();
-    }
-
-    public void enable() {
-        initGlobalKeyboardHook();
-    }
-
-    public boolean isEnabled() {
-        return globalKeyboardHook.isAlive();
-    }
 
 }
