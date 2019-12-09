@@ -16,5 +16,5 @@ docs
 *.jpg
 !assets/*.png
 !assets/*.jpg
-!out/artifacts/assets/*.png
-!out/artifacts/assets/*.jpg
+!out/artifacts/*
+!out/artifacts/*
