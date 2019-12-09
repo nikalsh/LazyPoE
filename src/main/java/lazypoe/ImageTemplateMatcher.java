@@ -171,7 +171,6 @@ uncomment below for debugging
     }
 
     public boolean findTab(BufferedImage img) {
-
         Mat s1 = matchTemplateWithBI(currencyTabTemplate, Utils.bufferedImageToMat(img), currencyTabTemplate.getThreshold()).getMat();
         Mat s2 = matchTemplateWithBI(divTabTemplate, s1, divTabTemplate.getThreshold()).getMat();
         Mat s3 = matchTemplateWithBI(delveTabTemplate, s2, delveTabTemplate.getThreshold()).getMat();
@@ -188,7 +187,6 @@ uncomment below for debugging
     }
 
     public void findOrbs(BufferedImage screenshot) {
-
         BImatchAll(screenshot);
     }
 
