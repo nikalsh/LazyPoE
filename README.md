@@ -17,10 +17,3 @@ Run:
 ```shell
 java -jar lazypoe.jar
 ```
-
-
-#### Hotkeys
-|Shortcut| Action|
-|------|------|
-|CTRL + D|Blind inventory dump|
-| CTRL + X | Cancel current action |
