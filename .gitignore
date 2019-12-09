@@ -12,9 +12,9 @@ notes.md
 *.ser
 dist
 docs
-*.png
-*.jpg
 !assets/*.png
 !assets/*.jpg
 !out/artifacts/assets/*.png
 !out/artifacts/assets/*.jpg
+*.png
+*.jpg
