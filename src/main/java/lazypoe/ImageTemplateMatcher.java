@@ -59,29 +59,16 @@ public class ImageTemplateMatcher {
     }
 
     public String getNameOfOpenTab(BufferedImage img) {
-        Mat s1 = null;
-        TemplateMatchingResult res = null;
+
         for (int i = 0; i < tabTemplates.size(); i++) {
 
-            if (i == 0) {
-                res = matchTemplateWithBI(tabTemplates.get(0), Utils.bufferedImageToMat(img), tabTemplates.get(0).getThreshold());
+            TemplateMatchingResult res = matchTemplateWithBI(tabTemplates.get(i), Utils.bufferedImageToMat(img), tabTemplates.get(i).getThreshold());
 
-                if (res.getCount() > 0) {
-                    return tabTemplates.get(i).getName();
-                }
-
-                s1 = res.getMat();
-
-            } else {
-                res = matchTemplateWithBI(tabTemplates.get(i), s1, tabTemplates.get(i).getThreshold());
-
-                if (res.getCount() > 0) {
-                    return tabTemplates.get(i).getName();
-                }
-
-                s1 = res.getMat();
-
+            if (res.getCount() > 0) {
+                return tabTemplates.get(i).getName();
             }
+
+
         }
 
         return "Misc";

@@ -5,6 +5,7 @@ import lc.kra.system.keyboard.GlobalKeyboardHook;
 import lc.kra.system.keyboard.event.GlobalKeyAdapter;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -12,6 +13,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +39,9 @@ public class LazyPoE {
 
     private static boolean robotIsWorking = false;
     private static final boolean DEBUG = false;
-    private static final int DELAY = 17;
+    private int CLICK_DELAY = 18;
+    private int SCREENSHOT_DELAY = 2000;
+    private int CLIPBOARD_DELAY = 15;
 
     private static final String CURRENCY = "Currency";
     private static final String DIVINATION_CARD = "Divination Card";
@@ -72,7 +76,7 @@ public class LazyPoE {
     public LazyPoE() throws AWTException, UnsupportedFlavorException, IOException {
         robot = new Robot();
         imageTemplateMatcher = new ImageTemplateMatcher();
-        robot.setAutoDelay(DELAY);
+        robot.setAutoDelay(CLICK_DELAY);
         initInventory();
         initGlobalKeyboardHook();
         status = IDLE;
@@ -91,20 +95,20 @@ public class LazyPoE {
             public void keyReleased(GlobalKeyEvent event) {
 
                 if (CTRL_X(event)) {
-                    robotIsWorking = false;
-                    status = IDLE;
-                    System.out.println("action cancelled");
-                }
-
-                if (CTRL_D(event)) {
                     status = WORKING;
                     analyzeThenDumpInventoryToStash();
                     status = IDLE;
                 }
 
+                if (CTRL_D(event)) {
+                }
+
                 if (CTRL_R(event)) {
                     status = WORKING;
-                    autoTP();
+                    WindowFocus.isPoEOpen();
+//                    System.out.println(imageTemplateMatcher.getNameOfOpenTab(getStashTabScreenshot()));
+//                    realTimeTabAnalysis();
+//                    autoTP();
                     status = IDLE;
                 }
 
@@ -112,9 +116,26 @@ public class LazyPoE {
                     moveMouseCursorWithArrowKeys(event);
                 }
 
+
+                if (W(event) && D(event)) {
+
+                    System.out.println("asd1");
+                }
             }
         });
 
+    }
+
+    public void setCLICK_DELAY(int CLICK_DELAY) {
+        this.CLICK_DELAY = CLICK_DELAY;
+    }
+
+    public void setSCREENSHOT_DELAY(int SCREENSHOT_DELAY) {
+        this.SCREENSHOT_DELAY = SCREENSHOT_DELAY;
+    }
+
+    public void setCLIPBOARD_DELAY(int CLIPBOARD_DELAY) {
+        this.CLIPBOARD_DELAY = CLIPBOARD_DELAY;
     }
 
     public void setProtectedSlots(List<GUI.ButtonSlot> l) {
@@ -177,9 +198,9 @@ public class LazyPoE {
 
 
     private BufferedImage getStashTabScreenshot() {
-        robot.setAutoDelay(35);
+//        robot.setAutoDelay(SCREENSHOT_DELAY);
         BufferedImage image = robot.createScreenCapture(new Rectangle(10, 161, 637, 710));
-        robot.setAutoDelay(DELAY);
+//        robot.setAutoDelay(CLICK_DELAY);
         return image;
     }
 
@@ -209,7 +230,7 @@ public class LazyPoE {
         mouseRightClickXY((int) TPSlot.getX(), (int) TPSlot.getY());
         toggleInventory();
         mouseClickXY((int) PORTAL_LOC.getX(), (int) PORTAL_LOC.getY());
-        robot.setAutoDelay(DELAY);
+        robot.setAutoDelay(CLICK_DELAY);
     }
 
     private boolean isInventoryOpen() {
@@ -318,8 +339,8 @@ public class LazyPoE {
     private void analyzeThenDumpInventoryToStash() {
 
         robotIsWorking = true;
-        robot.mouseMove(1364, 507); //inventory safe spot
-        robot.setAutoDelay(13);
+//        robot.mouseMove(1364, 507); //inventory safe spot
+        robot.setAutoDelay(CLIPBOARD_DELAY);
 
         Map<Point, String> itemInSlot = new HashMap<>();
 
@@ -346,7 +367,7 @@ public class LazyPoE {
         }
         status = "done";
         robotIsWorking = false;
-        robot.setAutoDelay(DELAY);
+        robot.setAutoDelay(CLICK_DELAY);
 
         smartDump(itemInSlot);
     }
@@ -372,14 +393,32 @@ public class LazyPoE {
 
         for (int i = 0; i < 6; i++) {
 
-            String openTab = imageTemplateMatcher.getNameOfOpenTab(getStashTabScreenshot());
+
+            BufferedImage bi = getStashTabScreenshot();
+            String openTab = imageTemplateMatcher.getNameOfOpenTab(bi);
+
+            if (openTab.equals("Misc")) {
+                try {
+                    ImageIO.write(bi, "png", new File("miscs/Misc" + System.currentTimeMillis() + ".png"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
             Map<Point, String> inventory = inventories.get(openTab);
 
-            if (inventory.size() > 0) {
-                dump(inventory);
+            System.out.println(openTab);
+
+            if (inventory != null) {
+
+                if (inventory.size() > 0) {
+                    dump(inventory);
+                }
+
             }
+            robot.setAutoDelay(50);
             openNextTab();
+            robot.setAutoDelay(CLICK_DELAY);
         }
 
     }
@@ -400,10 +439,12 @@ public class LazyPoE {
         int x = 639;
         int y = 141;
 
+        robot.setAutoDelay(25);
         mouseClickXY(x, y);
         upPress();
         enterPress();
         mouseClickXY(x, y);
+        robot.setAutoDelay(CLICK_DELAY);
 
     }
 
@@ -445,13 +486,7 @@ public class LazyPoE {
     private String identifyItem() {
         copyToClipboard();
         String clip = null;
-        try {
-            clip = getClipboardText();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UnsupportedFlavorException e) {
-            e.printStackTrace();
-        }
+        clip = getClipboardText();
         resetClipboard();
         return getItem(clip);
     }
@@ -498,13 +533,14 @@ public class LazyPoE {
         return NEWLINE.split(clipboard);
     }
 
-    public String getClipboardText() throws IOException, UnsupportedFlavorException {
+    public String getClipboardText() {
         String clip = null;
         try {
             clip = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
         } catch (UnsupportedFlavorException | IOException e) {
             e.printStackTrace();
             System.out.println("Clpiboard was not a string");
+            clip = "";
         }
         return clip;
     }
@@ -615,6 +651,31 @@ public class LazyPoE {
     private boolean CTRL_SHIFT_X(GlobalKeyEvent event) {
         return event.getVirtualKeyCode() == GlobalKeyEvent.VK_X && event.isControlPressed() && event.isShiftPressed();
     }
+
+    private boolean W(GlobalKeyEvent event) {
+        return event.getVirtualKeyCode() == GlobalKeyEvent.VK_W;
+    }
+//    private boolean A(GlobalKeyEvent event) {
+//
+//    }
+//    private boolean S(GlobalKeyEvent event) {
+//
+//    }
+    private boolean D(GlobalKeyEvent event) {
+        return event.getVirtualKeyCode() == GlobalKeyEvent.VK_D;
+    }
+
+//    private boolean S_D(GlobalKeyEvent event) {
+//
+//    }
+//    private boolean A_D(GlobalKeyEvent event) {
+//
+//    }
+//    private boolean A_W(GlobalKeyEvent event) {
+//
+//    }
+
+
 
     private boolean CTRL_R(GlobalKeyEvent event) {
         return event.getVirtualKeyCode()

@@ -21,6 +21,8 @@ import javafx.stage.StageStyle;
 import lazypoe.LazyPoE;
 
 import java.awt.*;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +57,7 @@ public class GUI extends Application {
                     this.setText(protect ? "X" : "O");
 
                 }
-
+                lazyPoE.setProtectedSlots(inventorySlots);
             });
 
         }
@@ -74,7 +76,7 @@ public class GUI extends Application {
                 setText("O");
                 protect = false;
             }
-
+            lazyPoE.setProtectedSlots(inventorySlots);
         }
 
         public Point getSlot() {
@@ -86,12 +88,33 @@ public class GUI extends Application {
         }
     }
 
-    private Label hotkeyLabel;
+    private Label screenshotDelayLabel;
+    private Label clickDelayLabel;
+    private Label clipboardDelayLabel;
     private Label statusLabel;
     private Button toggleButton;
-    private Button saveButton;
     private Button resetButton;
+    private Label hotkeyLabel;
+    private Spinner<Integer> clipboardDelaySpinner;
+    private Spinner<Integer> screenshotDelaySpinner;
+    private Spinner<Integer> clickDelaySpinner;
+    int CLICK_DELAY = 18;
+    int CLIPBOARD_DELAY = 15;
+    int SCREENSHOT_DELAY = 2000;
     private LazyPoE lazyPoE;
+
+    {
+        try {
+            lazyPoE = new LazyPoE();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        } catch (UnsupportedFlavorException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private boolean started = false;
     private List<ButtonSlot> inventorySlots;
     private List<HBox> rows;
@@ -135,7 +158,6 @@ public class GUI extends Application {
         statusLabel.setText("asd");
 
         toggleButton = new Button("Toggle hotkeys");
-        saveButton = new Button("Save");
         resetButton = new Button("Reset");
         help = new Button("?");
         help.setTooltip(new Tooltip(String.format("Left click to toggle%nX = ignored%nO = not ignored%nRight click = Portal slot")));
@@ -146,19 +168,61 @@ public class GUI extends Application {
         hbox.setAlignment(Pos.BASELINE_CENTER);
         hbox.getChildren().addAll(hotkeyLabel);
 
+        VBox middleVBox = new VBox();
+        middleVBox.getChildren().addAll(buttonGrid, hbox(resetButton, help));
+        TitledPane middleTitledPane = new TitledPane();
+        middleTitledPane.setOpacity(1);
+        middleTitledPane.setText("Inventory");
+        middleTitledPane.setContent(middleVBox);
+        middleTitledPane.setAnimated(false);
+        middleTitledPane.getStyleClass().add("inventory");
+        Accordion middlePanel = new Accordion(middleTitledPane);
+        middlePanel.expandedPaneProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                primaryStage.sizeToScene();
+            });
+        });
+
+
+        clickDelayLabel = getLabel();
+        clickDelayLabel.setText("Click delay");
+        clipboardDelayLabel = getLabel();
+        clipboardDelayLabel.setText("Clipboard delay");
+        screenshotDelayLabel = getLabel();
+        screenshotDelayLabel.setText("Screenshot delay");
+
+        clickDelaySpinner = new Spinner<>();
+        clipboardDelaySpinner = new Spinner<>();
+        screenshotDelaySpinner = new Spinner<>();
+
+        SpinnerValueFactory<Integer> clickDelayValues = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5000, CLICK_DELAY);
+        SpinnerValueFactory<Integer> clipboardDelayValues = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5000, CLIPBOARD_DELAY);
+        SpinnerValueFactory<Integer> screenshotDelayValues = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5000, SCREENSHOT_DELAY);
+
+        clickDelaySpinner.setValueFactory(clickDelayValues);
+        clipboardDelaySpinner.setValueFactory(clipboardDelayValues);
+        screenshotDelaySpinner.setValueFactory(screenshotDelayValues);
+
+        clickDelaySpinner.valueProperty().addListener((obs, oldValue, newValue) -> this.lazyPoE.setCLICK_DELAY(newValue));
+        clipboardDelaySpinner.valueProperty().addListener((obs, oldValue, newValue) -> this.lazyPoE.setCLIPBOARD_DELAY(newValue));
+        screenshotDelaySpinner.valueProperty().addListener((obs, oldValue, newValue) -> this.lazyPoE.setSCREENSHOT_DELAY(newValue));
+
+
         VBox bottomVBox = new VBox();
-        bottomVBox.getChildren().addAll(buttonGrid, hbox(saveButton, resetButton, help));
 
-        TitledPane titledPane = new TitledPane();
-        titledPane.setOpacity(1);
-        titledPane.setText("Inventory");
-        titledPane.setContent(bottomVBox);
-        titledPane.setAnimated(false);
-        titledPane.getStyleClass().add("inventory");
+        VBox vbox1 = new VBox();
+//q                hbox1(clickDelayLabel, clickDelaySpinner), hbox1(clipboardDelayLabel, clipboardDelaySpinner), hbox1(screenshotDelayLabel, screenshotDelaySpinner));
 
-        Accordion bottomPanel = new Accordion(titledPane);
+        bottomVBox.setPadding(new Insets(10, 0, 10, 0));
+        bottomVBox.getChildren().addAll(vbox1);
+        TitledPane bottomTitledPane = new TitledPane();
+        bottomTitledPane.setOpacity(1);
+        bottomTitledPane.setText("Options");
+        bottomTitledPane.setContent(bottomVBox);
+        bottomTitledPane.setAnimated(false);
+        bottomTitledPane.getStyleClass().add("inventory");
+        Accordion bottomPanel = new Accordion(bottomTitledPane);
         bottomPanel.expandedPaneProperty().addListener((obs, oldVal, newVal) -> {
-            System.out.println("hello");
             Platform.runLater(() -> {
                 primaryStage.sizeToScene();
             });
@@ -170,7 +234,7 @@ public class GUI extends Application {
         topPanel.getChildren().add(hbox);
         topPanel.getChildren().addAll(hbox(statusLabel), hbox(toggleButton));
 
-        VBox ROOT = new VBox(topPanel, bottomPanel);
+        VBox ROOT = new VBox(topPanel, middlePanel, bottomPanel);
         pane.getChildren().add(ROOT);
         init(primaryStage, scene);
         started = true;
@@ -189,10 +253,6 @@ public class GUI extends Application {
 
             hotkeyLabel.setText("hotkeys " + (lazyPoE.isEnabled() ? "enabled" : "disabled"));
 
-        });
-
-        saveButton.setOnAction(event -> {
-            lazyPoE.setProtectedSlots(inventorySlots);
         });
 
         resetButton.setOnAction(event -> {
@@ -240,6 +300,15 @@ public class GUI extends Application {
     private HBox hbox(Node... node) {
         HBox hbox = new HBox();
         hbox.setAlignment(Pos.CENTER);
+        hbox.getChildren().addAll(node);
+        return hbox;
+    }
+
+    private HBox hbox1(Node... node) {
+        HBox hbox = new HBox();
+//        hbox.setPadding(new Insets(0, 10, 0, 10));
+//        hbox.setSpacing(0.8);
+        hbox.setAlignment(Pos.CENTER_RIGHT);
         hbox.getChildren().addAll(node);
         return hbox;
     }
