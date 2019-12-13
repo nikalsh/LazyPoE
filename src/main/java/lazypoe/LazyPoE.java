@@ -95,7 +95,7 @@ public class LazyPoE {
 
             @Override
             public void keyReleased(GlobalKeyEvent event) {
-                if (WindowFocus.PoEIsOpen()) {
+                if (Utils.PoEIsOpen()) {
 
                     if (CTRL_X(event)) {
                         status = WORKING;
