@@ -100,7 +100,7 @@ public class GUI extends Application {
     private Spinner<Integer> clickDelaySpinner;
     int CLICK_DELAY = 18;
     int CLIPBOARD_DELAY = 15;
-    int SCREENSHOT_DELAY = 2000;
+    int SCREENSHOT_DELAY = 125;
     private LazyPoE lazyPoE;
 
     {
@@ -185,15 +185,16 @@ public class GUI extends Application {
 
 
         clickDelayLabel = getLabel();
-        clickDelayLabel.setText("Click delay");
+        clickDelayLabel.setText(String.format("Click delay (%s)", CLICK_DELAY));
         clipboardDelayLabel = getLabel();
-        clipboardDelayLabel.setText("Clipboard delay");
+        clipboardDelayLabel.setText(String.format("Clipboard delay (%s)", CLIPBOARD_DELAY));
         screenshotDelayLabel = getLabel();
-        screenshotDelayLabel.setText("Screenshot delay");
+        screenshotDelayLabel.setText(String.format("Screenshot delay (%s)", SCREENSHOT_DELAY));
 
         clickDelaySpinner = new Spinner<>();
         clipboardDelaySpinner = new Spinner<>();
         screenshotDelaySpinner = new Spinner<>();
+
 
         SpinnerValueFactory<Integer> clickDelayValues = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5000, CLICK_DELAY);
         SpinnerValueFactory<Integer> clipboardDelayValues = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5000, CLIPBOARD_DELAY);
@@ -207,11 +208,15 @@ public class GUI extends Application {
         clipboardDelaySpinner.valueProperty().addListener((obs, oldValue, newValue) -> this.lazyPoE.setCLIPBOARD_DELAY(newValue));
         screenshotDelaySpinner.valueProperty().addListener((obs, oldValue, newValue) -> this.lazyPoE.setSCREENSHOT_DELAY(newValue));
 
+//        clickDelaySpinner.setEditable(true);
+//        clipboardDelaySpinner.setEditable(true);
+//        clickDelaySpinner.setEditable(true);
 
         VBox bottomVBox = new VBox();
 
         VBox vbox1 = new VBox();
-//q                hbox1(clickDelayLabel, clickDelaySpinner), hbox1(clipboardDelayLabel, clipboardDelaySpinner), hbox1(screenshotDelayLabel, screenshotDelaySpinner));
+
+        vbox1.getChildren().addAll(hbox1(clickDelayLabel, clickDelaySpinner), hbox1(clipboardDelayLabel, clipboardDelaySpinner), hbox1(screenshotDelayLabel, screenshotDelaySpinner));
 
         bottomVBox.setPadding(new Insets(10, 0, 10, 0));
         bottomVBox.getChildren().addAll(vbox1);

@@ -21,7 +21,7 @@ public class WindowFocus {
         public static native int GetWindowTextW(WinDef.HWND hWnd, char[] lpString, int nMaxCount);
     }
 
-    public static boolean isPoEOpen() {
+    public static boolean PoEIsOpen() {
         String name = "";
         if (Platform.isWindows()) {
             char[] buffer = new char[MAX_TITLE_LENGTH * 2];

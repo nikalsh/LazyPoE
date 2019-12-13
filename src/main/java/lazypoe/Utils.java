@@ -37,7 +37,7 @@ public class Utils {
         return Imgcodecs.imdecode(new MatOfByte(byteArrayOutputStream.toByteArray()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
     }
 
-    static BufferedImage matToBufferedImage(Mat matrix) throws Exception {
+    public static BufferedImage matToBufferedImage(Mat matrix) throws Exception {
         MatOfByte mob = new MatOfByte();
         Imgcodecs.imencode(".jpg", matrix, mob);
         byte ba[] = mob.toArray();
